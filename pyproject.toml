@@ -1,0 +1,29 @@
+[project]
+name = "praece-django"
+version = "0.1.0"
+description = "Praece Django template"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "dj-database-url>=3.1.2",
+    "django==5.0.6",
+    "gunicorn==22.0.0",
+    "psycopg[binary]>=3.3.6",
+    "whitenoise==6.7.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py311"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["E501"]  # line length is handled by ruff format
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.10",
+]
