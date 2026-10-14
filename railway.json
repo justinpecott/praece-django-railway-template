@@ -4,7 +4,11 @@
         "builder": "RAILPACK"
     },
     "deploy": {
-        "preDeployCommand": ["python manage.py migrate --noinput"],
-        "startCommand": "python manage.py collectstatic --noinput && gunicorn mysite.wsgi"
+        "preDeployCommand": [
+            "python manage.py migrate --noinput"
+        ],
+        "startCommand": "python manage.py collectstatic --noinput && gunicorn mysite.wsgi",
+        "healthcheckPath": "/health/",
+        "healthcheckTimeout": 100
     }
 }
