@@ -19,20 +19,39 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+# Railway sets RAILWAY_ENVIRONMENT_NAME on every deploy. Locally it is unset.
+ON_RAILWAY = bool(os.environ.get("RAILWAY_ENVIRONMENT_NAME"))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-rc^*w^w&6g9_(uvx#6s*bnt!w)l0rdi%!l7mv#y%uc&x%wo5pk"
+# Each app needs its own random SECRET_KEY, stored as a Railway variable.
+# Locally, fall back to a throwaway key that is only safe for development.
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    if ON_RAILWAY:
+        raise RuntimeError(
+            "SECRET_KEY is not set. In Railway, add it to this service as a "
+            "variable with a long random value, e.g. ${{secret(50)}}"
+        )
+    SECRET_KEY = "django-insecure-local-development-only"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Debug pages show code and settings, so they are only on locally.
+DEBUG = not ON_RAILWAY
 
-ALLOWED_HOSTS = ["*"]
+# Railway's public domain, plus the host Railway uses for healthchecks.
+RAILWAY_PUBLIC_DOMAIN = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+if ON_RAILWAY:
+    ALLOWED_HOSTS = ["healthcheck.railway.app"]
+    if RAILWAY_PUBLIC_DOMAIN:
+        ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+else:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-# FORM SUBMISSION
-# Comment out the following line and place your railway URL, and your production URL in the array.
-# CSRF_TRUSTED_ORIGINS = ["*"]
+# Needed for logging in and submitting forms over HTTPS on the live site.
+CSRF_TRUSTED_ORIGINS = (
+    [f"https://{RAILWAY_PUBLIC_DOMAIN}"] if RAILWAY_PUBLIC_DOMAIN else []
+)
+
+# Railway terminates HTTPS and forwards requests over HTTP with this header.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
@@ -47,13 +66,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "mysite.urls"
