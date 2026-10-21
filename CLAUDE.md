@@ -23,6 +23,13 @@ Keep everything simple and boring.
 - Ship: commit, merge your working branch into main, and push main. Railway auto-deploys from main.
 - After pushing, use the Railway tools to watch the deploy until it finishes.
 - If the deploy fails, get the logs (use railway-agent to diagnose if needed), fix it, and ship again before doing anything else.
+- Errors and tracebacks are logged to stdout. When the live site errors, read the Railway
+  runtime logs before guessing.
+- /health/ fails if the database is unreachable or migrations are pending. A failed
+  healthcheck on deploy means check the pre-deploy (migrate) output first.
+- Migrations run in Railway's pre-deploy step (railway.json). Its output may not appear in 
+the logs you can read. Don't move migrate into the start command. If /health/ passes,
+migrations ran.
 - When the deploy succeeds, curl the live URL to confirm it responds, then give the user the URL.
 
 ## Rules

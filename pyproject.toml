@@ -3,10 +3,10 @@ name = "praece-django"
 version = "0.1.0"
 description = "Praece Django template"
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.13"
 dependencies = [
     "dj-database-url>=3.1.2",
-    "django==5.0.6",
+    "django>=6.0,<7",
     "gunicorn==22.0.0",
     "psycopg[binary]>=3.3.6",
     "whitenoise==6.7.0",
